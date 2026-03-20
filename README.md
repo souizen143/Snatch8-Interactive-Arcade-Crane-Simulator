@@ -37,7 +37,7 @@ Breadboard	1
 Jumper Wires	Many
 Power Supply	5V
 
-🔌 Wiring Connections
+Wiring Connections
 RFID Module (MFRC522)
 Pin	Arduino
 SDA	D10
@@ -47,25 +47,29 @@ MISO	D12
 RST	D9
 GND	GND
 3.3V	3.3V
-📏 Ultrasonic Sensor (HC-SR04)
+
+Ultrasonic Sensor (HC-SR04)
 Pin	Arduino
 VCC	5V
 GND	GND
 TRIG	D3
 ECHO	D2
-🎮 Joystick Module
+
+Joystick Module
 Pin	Arduino
 VRx	A0
 VRy	A1
 GND	GND
 VCC	5V
-⚙️ Servo Motors
+
+Servo Motors
 Servo	Arduino
 Servo 1	D7
 Servo 2	D6
 VCC	5V
 GND	GND
-🔊 Active Buzzer
+
+Active Buzzer
 Pin	Arduino
 VCC (+)	D4
 GND (-)	GND
@@ -92,19 +96,15 @@ MFRC522.h
 #include <SPI.h>
 #include <MFRC522.h>
 
-// RFID
 #define SS_PIN 10
 #define RST_PIN 9
 MFRC522 mfrc522(SS_PIN, RST_PIN);
 
-// Ultrasonic
 #define TRIG 3
 #define ECHO 2
 
-// Buzzer
 #define BUZZER 4
 
-// Servos
 Servo servo1;
 Servo servo2;
 
@@ -141,74 +141,72 @@ void setup() {
 void loop() {
 
   // ================= RFID START =================
-  if (!gameStarted) {
-    if (!mfrc522.PICC_IsNewCardPresent()) return;
-    if (!mfrc522.PICC_ReadCardSerial()) return;
+if (!gameStarted) {
+if (!mfrc522.PICC_IsNewCardPresent()) return;
+if (!mfrc522.PICC_ReadCardSerial()) return;
 
-    Serial.println("Game Started!");
-    gameStarted = true;
+Serial.println("Game Started!");
+gameStarted = true;
 
-    // 🔊 Start sound
-    digitalWrite(BUZZER, HIGH);
-    delay(300);
-    digitalWrite(BUZZER, LOW);
+// 🔊 Start sound
+digitalWrite(BUZZER, HIGH);
+delay(300);
+digitalWrite(BUZZER, LOW);
+delay(1000);
+}
 
-    delay(1000);
-  }
+// ================= JOYSTICK =================
+if (analogRead(A0) < 200 && eje1 < 180) {
+eje1++;
+servo1.write(eje1);
+}
+if (analogRead(A0) > 700 && eje1 > 0) {
+eje1--;
+servo1.write(eje1);
+}
 
-  // ================= JOYSTICK =================
-  if (analogRead(A0) < 200 && eje1 < 180) {
-    eje1++;
-    servo1.write(eje1);
-  }
-  if (analogRead(A0) > 700 && eje1 > 0) {
-    eje1--;
-    servo1.write(eje1);
-  }
+if (analogRead(A1) < 200 && eje2 < 180) {
+eje2++;
+servo2.write(eje2);
+}
 
-  if (analogRead(A1) < 200 && eje2 < 180) {
-    eje2++;
-    servo2.write(eje2);
-  }
-  if (analogRead(A1) > 700 && eje2 > 0) {
-    eje2--;
-    servo2.write(eje2);
-  }
+if (analogRead(A1) > 700 && eje2 > 0) {
+eje2--;
+servo2.write(eje2);
+}
 
-  // ================= ULTRASONIC =================
-  long duration;
-  int distance;
+// ================= ULTRASONIC =================
+long duration;
+int distance;
 
-  digitalWrite(TRIG, LOW);
-  delayMicroseconds(2);
-  digitalWrite(TRIG, HIGH);
-  delayMicroseconds(10);
-  digitalWrite(TRIG, LOW);
+digitalWrite(TRIG, LOW);
+delayMicroseconds(2);
+digitalWrite(TRIG, HIGH);
+delayMicroseconds(10);
+digitalWrite(TRIG, LOW);
+duration = pulseIn(ECHO, HIGH);
+distance = duration * 0.034 / 2;
+Serial.print("Distance: ");
+Serial.println(distance);
 
-  duration = pulseIn(ECHO, HIGH);
-  distance = duration * 0.034 / 2;
+// ================= PRIZE DETECT =================
+if (distance > 0 && distance < 10) {
+Serial.println("Prize Detected!");
 
-  Serial.print("Distance: ");
-  Serial.println(distance);
+// Beep Beep (win sound)
+for (int i = 0; i < 3; i++) {
+digitalWrite(BUZZER, HIGH);
+delay(150);
+digitalWrite(BUZZER, LOW);
+delay(150);
+}
 
-  // ================= PRIZE DETECT =================
-  if (distance > 0 && distance < 10) {
-    Serial.println("Prize Detected!");
+// Simulate grab
+servo2.write(120);
+delay(1000);
+}
 
-    // 🔊 Beep Beep (win sound)
-    for (int i = 0; i < 3; i++) {
-      digitalWrite(BUZZER, HIGH);
-      delay(150);
-      digitalWrite(BUZZER, LOW);
-      delay(150);
-    }
-
-    // Simulate grab
-    servo2.write(120);
-    delay(1000);
-  }
-
-  delay(15);
+delay(15);
 }
 Required Libraries
 
